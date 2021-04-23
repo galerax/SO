@@ -1,0 +1,11 @@
+Da maneira como estão descritos os processos concorrentes muitas coisas
+podem acontecer já que não há um mecanismo de controle ao acesso dos saldos.
+Em suma, haverá uma fila desregrada de comandos querendo acessar os saldos
+indiscriminadamente. No entanto, a depender do gerenciamento de processos
+do SO essa fila pode organizar-se de formas diferentes alterando o
+resuldado a cada iteração do programa.
+
+Note que para diferentes filas temos resuldados distintos: 
+
+	[1a, 2a, 1b, 2b, 1c, 2c] --> Saldo(a) = 400
+	[1a, 1b, 1c, 2a, 2b, 2c] --> Saldo(a) = 200

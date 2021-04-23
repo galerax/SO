@@ -34,15 +34,17 @@ class bola:
 	state= False
 
 
+#Criando 100 crianças 
 criancas = [crianca(nome, rd.randint(0,100)) for nome in range(100)]
 
 bola = bola()
 threads = []
 
+#Atribuindo a cada criança uma thread e iniciando essas threads
 for c in criancas:
 	t = threading.Thread(target = c.jogando, kwargs=dict(bola_sobrando=bola))
 	t.start()
 	threads.append(t)
 
-# começando a brincadeira
+#Coomeçando a brincadeira
 bola.state = True
