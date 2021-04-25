@@ -1,50 +1,72 @@
 import time
 import threading
 import random as rd
+from faker import Faker
 
 
-class crianca:
-	tempo = 3
-	com_bola = False
-	esperando = True
-	def __init__(self, nome, habilidade):
-		self.nome = nome
-		self.habilidade = habilidade
-		self.priority = habilidade/100
+class Crianca:
+    tempo_de_espera = 3
 
-	def jogando(self, bola_sobrando):
-		while True:
-			if bola_sobrando.state == True:
-				bola_sobrando.state = False
-				self.com_bola = True
-				print(f'{self.nome}: Peguei! \n')
-				time.sleep(self.tempo)
-				bola_sobrando.state = True
-				self.com_bola = False
-				print(f'{self.nome}: Soltei! \n')
-			else:
-				self.esperando = True
-			self.test_priority()
+    def __init__(self, nome, priority, meta):
+        self.com_bola = False
+        self.pontos = 0
+        self.meta = meta
+        self.nome = nome
+        self.priority = priority
 
-	def test_priority(self):
-		time.sleep(1-self.priority)
+    def jogando(self, jogo):
+        while jogo.em_progresso:
+            if jogo.bola_em_uso == False:
+                self.pegar_bola(jogo)
+                if self.pontos >= self.meta:
+                    print(f'Fim de jogo! {self.nome} ganhou.')
+                    jogo.em_progresso = False
+                    break
+                time.sleep(self.tempo_de_espera)
+                self.soltar_bola(jogo)
+            else:
+                time.sleep(1-self.priority)
+
+    def pegar_bola(self, jogo):
+        jogo.bola_em_uso = True
+        self.com_bola = True
+        self.pontos += 1
+        print(f'{self.nome}: Peguei a bola! | {self.pontos} Pontos!\n')
+
+    def soltar_bola(self, jogo):
+        jogo.bola_em_uso = False
+        self.com_bola = False
+        print(f'{self.nome}: Soltei!\n')
 
 
-class bola:
-	state= False
+class Jogo:
+    em_progresso = True
+    bola_em_uso = True
 
 
-#Criando 100 crianças 
-criancas = [crianca(nome, rd.randint(0,100)) for nome in range(100)]
+def start_game(num_criancas, meta):
+    fake = Faker('pt_BR')
+    parametros_do_jogo = [{'nome': fake.name(), 'prioridade': rd.uniform(0, 1)} for i in range(num_criancas)]
+    print('Parâmetros dos jogadores:')
 
-bola = bola()
-threads = []
+    # Criando crianças
+    criancas = []
+    for parametros in parametros_do_jogo:
+        print(parametros)
+        criancas.append(Crianca(parametros['nome'], parametros['prioridade'], meta))
 
-#Atribuindo a cada criança uma thread e iniciando essas threads
-for c in criancas:
-	t = threading.Thread(target = c.jogando, kwargs=dict(bola_sobrando=bola))
-	t.start()
-	threads.append(t)
+    jogo = Jogo()
+    threads = []
 
-#Coomeçando a brincadeira
-bola.state = True
+    # Atribuindo a cada criança uma thread e iniciando essas threads
+    for c in criancas:
+        t = threading.Thread(target=c.jogando, kwargs=dict(jogo=jogo))
+        t.start()
+        threads.append(t)
+
+    # Começando a brincadeira
+    print(f'\nO Jogo começou com {num_criancas} jogadores, e terminará quando algum jogador atingir {meta} pontos.\n')
+    jogo.bola_em_uso = False
+
+
+start_game(num_criancas=10, meta=10)
